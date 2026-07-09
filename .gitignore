@@ -5,6 +5,3 @@ output/
 .venv/
 venv/
 env/
-input/*.csv
-input/*.xlsx
-!input/README.md
