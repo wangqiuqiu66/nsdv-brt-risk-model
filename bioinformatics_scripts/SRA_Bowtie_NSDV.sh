@@ -8,8 +8,6 @@ OUT_DIR=/path/SRA_Bowtie_NSDV/${PROJECT_ID}
 BOWTIE2_INDEX=/path/NSDV_reference.mapping.fasta.bowtie2
 THREADS=16
 
-mkdir -p "$SRA_DIR" "$FASTQ_DIR" "$OUT_DIR"
-
 while read -r sra_id; do
     [ -z "$sra_id" ] && continue
 
@@ -40,13 +38,6 @@ while read -r sra_id; do
         -x "$BOWTIE2_INDEX" \
         -1 "$OUT_DIR/${sra_id}.clean_1.fq.gz" \
         -2 "$OUT_DIR/${sra_id}.clean_2.fq.gz" \
-        -S "$OUT_DIR/${sra_id}.sam"
-
-    samtools view -bSF4 "$OUT_DIR/${sra_id}.sam" > "$OUT_DIR/${sra_id}.bam"
-    samtools sort -@ "$THREADS" "$OUT_DIR/${sra_id}.bam" -o "$OUT_DIR/${sra_id}.sorted.bam"
-    samtools rmdup "$OUT_DIR/${sra_id}.sorted.bam" "$OUT_DIR/${sra_id}.sorted.rmdup.bam"
-    samtools index "$OUT_DIR/${sra_id}.sorted.rmdup.bam"
-    samtools idxstats "$OUT_DIR/${sra_id}.sorted.rmdup.bam" > "$OUT_DIR/${sra_id}_mapping.txt"
-
-    rm "$OUT_DIR/${sra_id}.sam" "$OUT_DIR/${sra_id}.bam" "$OUT_DIR/${sra_id}.sorted.bam"
+        | samtools view -h -b -F4 \
+        | samtools sort -@ "$THREADS" -o "$OUT_DIR/${sra_id}.sorted.bam"
 done < "$SRA_LIST"

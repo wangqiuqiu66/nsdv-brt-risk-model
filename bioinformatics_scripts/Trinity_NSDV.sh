@@ -10,8 +10,6 @@ RRNA_INDEX=/path/SILVA_132_rRNA.fasta.bowtie2
 THREADS=16
 MAX_MEMORY=128G
 
-mkdir -p "$OUT_DIR"
-
 for file in "${files[@]}"; do
     fastp \
         -i "$READ_DIR/${file}_1.fq.gz" \
@@ -43,6 +41,4 @@ for file in "${files[@]}"; do
         --right "$OUT_DIR/${file}.norRNA_2.fq" \
         --output "$OUT_DIR/${file}.trinity" \
         --full_cleanup
-
-    rm "$OUT_DIR/${file}.clean_1.fq" "$OUT_DIR/${file}.clean_2.fq" "$OUT_DIR/${file}.rRNA.sam"
 done

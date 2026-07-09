@@ -71,9 +71,7 @@ NON_ENVIRONMENT_COLUMNS = {
 #files
 RISK_DATA_PATH = INPUT_DIR / "risk_data_all.xlsx"
 NSDV_LOC_PATH = INPUT_DIR / "nsdv_location.xlsx"
-WEIGHT_PATH = OUTPUT_ROOT / "weight_fixed" / "weight.xlsx"
-WEIGHT_MODE = os.environ.get("BRT_WEIGHT_MODE", "weighted").lower()
-EXCLUDED_FEATURES = {"Horses_density"}
+WEIGHT_PATH = INPUT_DIR / "weight.xlsx"
 
 HOST_TICKS = [
     "Rhipicephalus appendiculatus",
@@ -125,37 +123,25 @@ RISK_FACTOR_LABELS = {
 
 
 def get_environment_features(df: pd.DataFrame) -> list[str]:
-    features = [
+    return [
         col for col in df.columns
         if col not in NON_ENVIRONMENT_COLUMNS
         and col not in TICK_PROB_FEATURES
-        and col not in EXCLUDED_FEATURES
         and pd.api.types.is_numeric_dtype(df[col])
     ]
-    if len(features) != 35:
-        raise ValueError(
-            f"Expected 35 environmental variables after exclusions, found {len(features)}: {features}"
-        )
-    return features
 
 
 def load_nsdv_locations() -> pd.DataFrame:
     nsdv_loc = pd.read_excel(NSDV_LOC_PATH, sheet_name="Sheet1")
-    required = {"gaul2_code", "is"}
+    required = {"gaul2_code"}
     missing = required.difference(nsdv_loc.columns)
     if missing:
         raise ValueError(f"{NSDV_LOC_PATH} is missing columns: {sorted(missing)}")
-    return nsdv_loc.loc[nsdv_loc["is"].ne(0) | nsdv_loc["is"].isna()].copy()
+    return nsdv_loc.copy()
 
 
 def add_model_weights(full_data: pd.DataFrame) -> pd.DataFrame:
     """Merge cities survey weights and use 1 for cities without a weight."""
-
-    if WEIGHT_MODE in {"none", "no_weight", "unweighted", "onweight"}:
-        weighted = full_data.copy()
-        weighted["gaul2_code"] = weighted["gaul2_code"].astype(str)
-        weighted["model_weight"] = 1.0
-        return weighted
 
     weight_df = pd.read_excel(WEIGHT_PATH)
 

@@ -1,41 +1,37 @@
-This repository contains the cleaned scripts for running Boosted Regression Tree (BRT) analyses of tick-vector and Nairobi sheep disease virus (NSDV) risk.
+This repository contains the cleaned scripts for Boosted Regression Tree (BRT) modelling and bioinformatics analyses of Nairobi sheep disease virus (NSDV) risk.
 
-The BRT workflow was converted from notebook-style analyses into standalone Python scripts. All required libraries can be installed using the packages listed in "requirements.txt". The scripts read input files from the local "input/" directory and write generated results to the local "output/" directory by default.
+The BRT workflow was converted from notebook-style analyses into standalone Python scripts. All required Python libraries can be installed using the packages listed in `requirements.txt`. The scripts read input files from the local `input/` directory and write generated results to the local `output/` directory by default.
 
 Contents:
 
-(1) "brt_scripts/01_weight.py": Calculates inverse-probability weights for surveyed GAUL2 areas. NSDV observations are read from "input/nsdv_location.xlsx" (Sheet1), and rows where "is == 0" are excluded.
+`brt_scripts/tick.py`: Runs BRT models for the three tick vectors and exports model metrics, predicted probabilities, high-risk counties, and relative-contribution tables.
 
-(2) "brt_scripts/02_tick.py": Runs BRT models for the three tick vectors, exports model metrics, predicted probabilities, high-risk counties, and relative-contribution tables.
+`brt_scripts/nsdv.py`: Runs the NSDV BRT model using environmental variables and predicted probabilities from the three tick-vector models.
 
-(3) "brt_scripts/03_nsdv.py": Runs the NSDV BRT model using environmental variables and predicted probabilities from the three tick-vector models.
+`input/`: Includes all required BRT input files, including risk factors, tick and NSDV occurrence records, and inverse-probability weights.
 
-(4) "brt_scripts/04_tick_pdp.py" and "brt_scripts/05_nsdv_pdp.py": Calculate and plot partial dependence curves for key tick-vector and NSDV risk factors.
+`bioinformatics_scripts/Bowtie.sh`: Uses Bowtie2 to align sequencing reads to reference sequences and exports sorted BAM files.
 
-(5) "brt_scripts/06_pop_area.py": Summarizes observed and predicted high-risk counties, area, and population size for tick vectors and NSDV.
+`bioinformatics_scripts/SRA_Bowtie_NSDV.sh`: Downloads SRA reads, converts them to FASTQ, performs read cleaning, and maps cleaned reads to the NSDV reference.
 
-(6) "input/" directory: Includes the required input files "risk_data_all.xlsx", "tick_location.xlsx", "nsdv_location.xlsx", and "population.xlsx".
+`bioinformatics_scripts/Trinity_NSDV.sh`: Cleans raw reads, removes rRNA reads, and assembles transcripts using Trinity.
 
-(7) "output/" directory: Stores generated weights, model outputs, prediction summaries, relative-contribution tables, partial-dependence data, and population/area summaries.
+`bioinformatics_scripts/BLASTN_NSDV.sh` and `bioinformatics_scripts/DIAMOND_BLASTX_NSDV.sh`: Compare assembled contigs against GenBank nucleotide and protein databases to identify homologous sequences.
 
-Recommended running order:
+Recommended running order for BRT models:
 
 ```powershell
-conda activate nsdv_code
-python brt_scripts\01_weight.py
-python brt_scripts\02_tick.py
-python brt_scripts\03_nsdv.py
-python brt_scripts\04_tick_pdp.py
-python brt_scripts\05_nsdv_pdp.py
-python brt_scripts\06_pop_area.py
+pip install -r requirements.txt
+python brt_scripts\tick.py
+python brt_scripts\nsdv.py
 ```
 
 Optional settings:
 
-(1) Set "BRT_OUTPUT_DIR" to write results to a different output directory.
+Set `BRT_OUTPUT_DIR` to write results to a different output directory.
 
-(2) Set "BRT_WEIGHT_MODE" to "none", "no_weight", "unweighted", or "onweight" to run models without inverse-probability weights.
+Tick and NSDV high-risk GAUL2 areas are defined using `mean_prob >= 0.5`. Tick and NSDV relative-contribution tables are exported as decimal values with four digits after the decimal point.
 
-Tick and NSDV high-risk GAUL2 areas are defined using "mean_prob >= 0.5" in the summary outputs. Tick and NSDV relative-contribution tables are exported as decimal values with four digits after the decimal point.
+Generated BRT results are written to `output/` by default.
 
-If you encounter any bugs or issues with the code, please feel free to get in touch!
+If you encounter any bugs or issues with the code, please feel free to get in touch.

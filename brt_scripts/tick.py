@@ -61,8 +61,7 @@ RC_TABLE_DIR = OUTPUT_BASE_ROOT / "tick_rc_tables"
 
 RISK_DATA_PATH = INPUT_DIR / "risk_data_all.xlsx"
 TICK_DIST_PATH = INPUT_DIR / "tick_location.xlsx"
-WEIGHT_PATH = OUTPUT_BASE_ROOT / "weight_fixed" / "weight.xlsx"
-WEIGHT_MODE = os.environ.get("BRT_WEIGHT_MODE", "weighted").lower()
+WEIGHT_PATH = INPUT_DIR / "weight.xlsx"
 
 TARGET_SPECIES_LIST = [
     "Rhipicephalus appendiculatus",
@@ -75,7 +74,6 @@ N_ITERATIONS = 100
 NEG_SAMPLE_RATIO = 5
 KEY_FACTOR_MIN_RC = 0.02
 HIGH_RISK_THRESHOLD = 0.5
-EXCLUDED_FEATURES = {"Horses_density"}
 
 NON_ENVIRONMENT_COLUMNS = {
     "gaul2_code", "gaul0_name", "gaul1_name", "gaul2_name", "continent",
@@ -117,26 +115,14 @@ RISK_FACTOR_LABELS = {
 # ======================================================================
 
 def get_environment_features(df: pd.DataFrame) -> list[str]:
-    features = [
+    return [
         col for col in df.columns
         if col not in NON_ENVIRONMENT_COLUMNS
-        and col not in EXCLUDED_FEATURES
         and pd.api.types.is_numeric_dtype(df[col])
     ]
-    if len(features) != 35:
-        raise ValueError(
-            f"Expected 35 environmental variables after exclusions, found {len(features)}: {features}"
-        )
-    return features
 
 
 def add_model_weights(full_risk_data: pd.DataFrame) -> pd.DataFrame:
-    if WEIGHT_MODE in {"none", "no_weight", "unweighted", "onweight"}:
-        weighted = full_risk_data.copy()
-        weighted["gaul2_code"] = weighted["gaul2_code"].astype(str)
-        weighted["model_weight"] = 1.0
-        return weighted
-
     weight_df = pd.read_excel(WEIGHT_PATH)
 
     weighted = full_risk_data.copy()
@@ -205,11 +191,11 @@ def run_species_workflow(
     background_pool = full_risk_data[full_risk_data["status"] == 0].copy()
     n_neg_needed = min(len(background_pool), len(pos_data) * NEG_SAMPLE_RATIO)
 
-    # step 1 - screen key factors
+    # step 1 鈥?screen key factors
     key_factors, screening_rc = screen_key_factors(pos_data, background_pool, n_neg_needed, feature_cols)
     screening_rc.to_csv(output_rc_dir / f"{species_name}_rc_screening.csv", index=False)
 
-    # step 2 - 100-iteration bootstrap prediction
+    # step 2 鈥?100-iteration bootstrap prediction
     metrics_list, all_rc_dfs, all_hrc_dfs, all_pred_dfs = [], [], [], []
 
     for iteration in range(1, N_ITERATIONS + 1):
