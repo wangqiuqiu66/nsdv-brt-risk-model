@@ -8,7 +8,7 @@ Contents:
 
 `brt_scripts/nsdv.py`: Runs the NSDV BRT model using environmental variables and predicted probabilities from the three tick-vector models.
 
-`input/`: Includes all required BRT input files, including risk factors, tick and NSDV occurrence records, and inverse-probability weights.
+`input/`: Place the required BRT input files here before running the scripts. The data files are not included in this repository.
 
 `bioinformatics_scripts/Bowtie.sh`: Uses Bowtie2 to align sequencing reads to reference sequences and exports sorted BAM files.
 

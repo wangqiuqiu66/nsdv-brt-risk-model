@@ -1,2 +1,10 @@
 __pycache__/
 *.pyc
+output/
+.env
+.venv/
+venv/
+env/
+input/*.csv
+input/*.xlsx
+!input/README.md
